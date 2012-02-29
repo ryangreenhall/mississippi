@@ -2,6 +2,22 @@
   (:use [mississippi.core] :reload)
   (:use [clojure.test]))
 
+(testing "Conditional validations"
+  (defn should-validate?
+    [subject]
+    true)
+
+  (deftest conditional-required-validation
+    (let [subject {:c "wrong" :b 3}
+          validations {:a [(required) :msg "is required dude" :when should-validate?]}]
+        (is (not (empty? (:errors (validate subject validations)))))))
+        
+  (deftest conditional-validation-with-inline-validators
+     (let [subject {:a 501 :b :low}
+           validations {:a [#(< % 500) :msg "too high!" :when #(= :low (:b %))]}]
+
+       (is (not (empty? (:errors (validate subject validations))))))))
+        
 (testing "generating errors"
   (deftest adds-error-message-when-validation-check-fails
     (is (= {:a ["error message"]}
